@@ -45,7 +45,6 @@ export default function Home() {
 
   // Add a new task
   const addTask = (e: React.FormEvent) => {
-    console.log(undefinedVariable); // This will cause an error!
     e.preventDefault();
     if (inputValue.trim() === "") return;
 
@@ -56,7 +55,8 @@ export default function Home() {
       createdAt: new Date(),
     };
 
-    setTasks((prev) => [...prev, newTask]);
+    // Oops! Setting to empty array instead of adding to previous tasks
+    setTasks([]); // This "bug" will make all tasks disappear when you add one!
     setInputValue("");
   };
 
