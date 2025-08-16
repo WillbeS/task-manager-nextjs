@@ -45,6 +45,7 @@ export default function Home() {
 
   // Add a new task
   const addTask = (e: React.FormEvent) => {
+    console.log(undefinedVariable); // This will cause an error!
     e.preventDefault();
     if (inputValue.trim() === "") return;
 
