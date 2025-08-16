@@ -217,7 +217,7 @@ export default function Home() {
                         onClick={() => startEditing(task.id, task.text)}
                         className="px-3 py-1 bg-blue-500 text-white rounded text-sm hover:bg-blue-600 transition-colors"
                       >
-                        Edit
+                        Modify
                       </button>
                       <button
                         onClick={() => deleteTask(task.id)}
