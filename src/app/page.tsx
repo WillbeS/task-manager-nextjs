@@ -1,5 +1,4 @@
 "use client";
-
 import { useState, useEffect } from "react";
 
 interface Task {
@@ -17,6 +16,31 @@ export default function Home() {
   const [filter, setFilter] = useState<FilterType>("all");
   const [editingId, setEditingId] = useState<number | null>(null);
   const [editingText, setEditingText] = useState("");
+
+  // Load tasks from localStorage on component mount
+  useEffect(() => {
+    const savedTasks = localStorage.getItem("taskManager_tasks");
+    if (savedTasks) {
+      try {
+        const parsedTasks = JSON.parse(savedTasks);
+        // Convert date strings back to Date objects
+        const tasksWithDates = parsedTasks.map((task: any) => ({
+          ...task,
+          createdAt: new Date(task.createdAt),
+        }));
+        setTasks(tasksWithDates);
+      } catch (error) {
+        console.error("Error loading tasks from localStorage:", error);
+      }
+    }
+  }, []);
+
+  // Save tasks to localStorage whenever tasks change
+  useEffect(() => {
+    if (tasks.length > 0) {
+      localStorage.setItem("taskManager_tasks", JSON.stringify(tasks));
+    }
+  }, [tasks]);
 
   // Add a new task
   const addTask = (e: React.FormEvent) => {
@@ -45,7 +69,20 @@ export default function Home() {
 
   // Delete a task
   const deleteTask = (id: number) => {
-    setTasks((prev) => prev.filter((task) => task.id !== id));
+    setTasks((prev) => {
+      const newTasks = prev.filter((task) => task.id !== id);
+      // If no tasks left, clear localStorage
+      if (newTasks.length === 0) {
+        localStorage.removeItem("taskManager_tasks");
+      }
+      return newTasks;
+    });
+  };
+
+  // Clear all tasks
+  const clearAllTasks = () => {
+    setTasks([]);
+    localStorage.removeItem("taskManager_tasks");
   };
 
   // Start editing a task
@@ -92,7 +129,9 @@ export default function Home() {
           <h1 className="text-4xl font-bold text-gray-800 mb-2">
             My Task Manager
           </h1>
-          <p className="text-gray-600">Stay organized and productive</p>
+          <p className="text-gray-600">
+            Stay organized and productive • Tasks saved automatically
+          </p>
         </div>
 
         {/* Add Task Form */}
@@ -135,10 +174,21 @@ export default function Home() {
 
         {/* Task Stats */}
         <div className="bg-white rounded-lg p-4 mb-6 shadow-sm">
-          <div className="flex justify-between text-sm text-gray-600">
-            <span>Total: {tasks.length}</span>
-            <span>Active: {activeCount}</span>
-            <span>Completed: {completedCount}</span>
+          <div className="flex justify-between items-center">
+            <div className="flex gap-6 text-sm text-gray-600">
+              <span>Total: {tasks.length}</span>
+              <span>Active: {activeCount}</span>
+              <span>Completed: {completedCount}</span>
+            </div>
+            {tasks.length > 0 && (
+              <button
+                onClick={clearAllTasks}
+                className="px-3 py-1 bg-red-500 text-white rounded text-sm hover:bg-red-600 transition-colors"
+                title="Clear all tasks"
+              >
+                Clear All
+              </button>
+            )}
           </div>
         </div>
 
