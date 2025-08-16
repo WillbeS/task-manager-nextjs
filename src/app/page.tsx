@@ -1,103 +1,244 @@
-import Image from "next/image";
+"use client";
+
+import { useState, useEffect } from "react";
+
+interface Task {
+  id: number;
+  text: string;
+  completed: boolean;
+  createdAt: Date;
+}
+
+type FilterType = "all" | "active" | "completed";
 
 export default function Home() {
-  return (
-    <div className="font-sans grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="font-mono list-inside list-decimal text-sm/6 text-center sm:text-left">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] font-mono font-semibold px-1 py-0.5 rounded">
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
+  const [tasks, setTasks] = useState<Task[]>([]);
+  const [inputValue, setInputValue] = useState("");
+  const [filter, setFilter] = useState<FilterType>("all");
+  const [editingId, setEditingId] = useState<number | null>(null);
+  const [editingText, setEditingText] = useState("");
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+  // Add a new task
+  const addTask = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (inputValue.trim() === "") return;
+
+    const newTask: Task = {
+      id: Date.now(),
+      text: inputValue.trim(),
+      completed: false,
+      createdAt: new Date(),
+    };
+
+    setTasks((prev) => [...prev, newTask]);
+    setInputValue("");
+  };
+
+  // Toggle task completion
+  const toggleTask = (id: number) => {
+    setTasks((prev) =>
+      prev.map((task) =>
+        task.id === id ? { ...task, completed: !task.completed } : task
+      )
+    );
+  };
+
+  // Delete a task
+  const deleteTask = (id: number) => {
+    setTasks((prev) => prev.filter((task) => task.id !== id));
+  };
+
+  // Start editing a task
+  const startEditing = (id: number, text: string) => {
+    setEditingId(id);
+    setEditingText(text);
+  };
+
+  // Save edited task
+  const saveEdit = (id: number) => {
+    if (editingText.trim() === "") return;
+
+    setTasks((prev) =>
+      prev.map((task) =>
+        task.id === id ? { ...task, text: editingText.trim() } : task
+      )
+    );
+    setEditingId(null);
+    setEditingText("");
+  };
+
+  // Cancel editing
+  const cancelEdit = () => {
+    setEditingId(null);
+    setEditingText("");
+  };
+
+  // Filter tasks based on current filter
+  const filteredTasks = tasks.filter((task) => {
+    if (filter === "active") return !task.completed;
+    if (filter === "completed") return task.completed;
+    return true;
+  });
+
+  // Get task counts
+  const activeCount = tasks.filter((task) => !task.completed).length;
+  const completedCount = tasks.filter((task) => task.completed).length;
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 py-8">
+      <div className="max-w-2xl mx-auto px-4">
+        {/* Header */}
+        <div className="text-center mb-8">
+          <h1 className="text-4xl font-bold text-gray-800 mb-2">
+            My Task Manager
+          </h1>
+          <p className="text-gray-600">Stay organized and productive</p>
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
+
+        {/* Add Task Form */}
+        <form onSubmit={addTask} className="mb-8">
+          <div className="flex gap-2">
+            <input
+              type="text"
+              value={inputValue}
+              onChange={(e) => setInputValue(e.target.value)}
+              placeholder="Add a new task..."
+              className="flex-1 px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            />
+            <button
+              type="submit"
+              className="px-6 py-3 bg-blue-500 text-white rounded-lg hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors"
+            >
+              Add
+            </button>
+          </div>
+        </form>
+
+        {/* Filter Buttons */}
+        <div className="flex justify-center gap-2 mb-6">
+          {(["all", "active", "completed"] as FilterType[]).map(
+            (filterType) => (
+              <button
+                key={filterType}
+                onClick={() => setFilter(filterType)}
+                className={`px-4 py-2 rounded-lg capitalize transition-colors ${
+                  filter === filterType
+                    ? "bg-blue-500 text-white"
+                    : "bg-white text-gray-700 hover:bg-gray-50"
+                }`}
+              >
+                {filterType}
+              </button>
+            )
+          )}
+        </div>
+
+        {/* Task Stats */}
+        <div className="bg-white rounded-lg p-4 mb-6 shadow-sm">
+          <div className="flex justify-between text-sm text-gray-600">
+            <span>Total: {tasks.length}</span>
+            <span>Active: {activeCount}</span>
+            <span>Completed: {completedCount}</span>
+          </div>
+        </div>
+
+        {/* Task List */}
+        <div className="space-y-2">
+          {filteredTasks.length === 0 ? (
+            <div className="text-center py-12 text-gray-500">
+              {tasks.length === 0
+                ? "No tasks yet. Add one above to get started!"
+                : `No ${filter} tasks found.`}
+            </div>
+          ) : (
+            filteredTasks.map((task) => (
+              <div
+                key={task.id}
+                className={`bg-white rounded-lg p-4 shadow-sm border-l-4 transition-all ${
+                  task.completed
+                    ? "border-green-400 bg-green-50"
+                    : "border-blue-400"
+                }`}
+              >
+                <div className="flex items-center gap-3">
+                  {/* Checkbox */}
+                  <input
+                    type="checkbox"
+                    checked={task.completed}
+                    onChange={() => toggleTask(task.id)}
+                    className="w-5 h-5 text-blue-600 rounded focus:ring-blue-500"
+                  />
+
+                  {/* Task Text */}
+                  <div className="flex-1">
+                    {editingId === task.id ? (
+                      <div className="flex gap-2">
+                        <input
+                          type="text"
+                          value={editingText}
+                          onChange={(e) => setEditingText(e.target.value)}
+                          className="flex-1 px-2 py-1 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          onKeyDown={(e) => {
+                            if (e.key === "Enter") saveEdit(task.id);
+                            if (e.key === "Escape") cancelEdit();
+                          }}
+                          autoFocus
+                        />
+                        <button
+                          onClick={() => saveEdit(task.id)}
+                          className="px-3 py-1 bg-green-500 text-white rounded text-sm hover:bg-green-600"
+                        >
+                          Save
+                        </button>
+                        <button
+                          onClick={cancelEdit}
+                          className="px-3 py-1 bg-gray-500 text-white rounded text-sm hover:bg-gray-600"
+                        >
+                          Cancel
+                        </button>
+                      </div>
+                    ) : (
+                      <span
+                        className={`${
+                          task.completed
+                            ? "line-through text-gray-500"
+                            : "text-gray-800"
+                        }`}
+                      >
+                        {task.text}
+                      </span>
+                    )}
+                  </div>
+
+                  {/* Action Buttons */}
+                  {editingId !== task.id && (
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() => startEditing(task.id, task.text)}
+                        className="px-3 py-1 bg-blue-500 text-white rounded text-sm hover:bg-blue-600 transition-colors"
+                      >
+                        Edit
+                      </button>
+                      <button
+                        onClick={() => deleteTask(task.id)}
+                        className="px-3 py-1 bg-red-500 text-white rounded text-sm hover:bg-red-600 transition-colors"
+                      >
+                        Delete
+                      </button>
+                    </div>
+                  )}
+                </div>
+
+                {/* Created Date */}
+                <div className="mt-2 text-xs text-gray-400">
+                  Created: {task.createdAt.toLocaleDateString()} at{" "}
+                  {task.createdAt.toLocaleTimeString()}
+                </div>
+              </div>
+            ))
+          )}
+        </div>
+      </div>
     </div>
   );
 }
