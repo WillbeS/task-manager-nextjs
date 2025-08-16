@@ -1,4 +1,6 @@
+// src/app/page.tsx
 "use client";
+
 import { useState, useEffect } from "react";
 
 interface Task {
@@ -22,9 +24,9 @@ export default function Home() {
     const savedTasks = localStorage.getItem("taskManager_tasks");
     if (savedTasks) {
       try {
-        const parsedTasks = JSON.parse(savedTasks);
+        const parsedTasks: Task[] = JSON.parse(savedTasks);
         // Convert date strings back to Date objects
-        const tasksWithDates = parsedTasks.map((task: any) => ({
+        const tasksWithDates = parsedTasks.map((task) => ({
           ...task,
           createdAt: new Date(task.createdAt),
         }));
